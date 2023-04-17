@@ -1,4 +1,4 @@
-import pygit2,tempfile, os, uuid, shutil, stat, subprocess
+import tempfile, os, uuid, shutil, stat, subprocess
 from utils.file_folder_remover import Remover
 class CloneRepo:
 
@@ -22,8 +22,9 @@ class CloneRepo:
                 os.chmod(path, stat.S_IWRITE), func(path)))
         os.makedirs(tdir_clone)
         try:
-            pygit2.clone_repository(self.repo_url+".git",tdir_clone)
-            # subprocess.call(["git","clone",self.repo_url+".git",tdir_clone])
+            # pygit2.clone_repository(self.repo_url+".git",tdir_clone)
+            clone_output = subprocess.run(["git","clone",self.repo_url+".git",tdir_clone],capture_output=True)
+            clone_output.check_returncode()
             return tdir_clone
         except Exception as e:
             # print("Error Cloning Repository - ",self.repo_name)
