@@ -4,9 +4,9 @@ from pymongo import MongoClient
 from utils.RepoDownload import CloneRepo
 from refactoring_identifier.RefMiner import RefMiner
 from utils.file_folder_remover import Remover
-from method_code_extractor import MethodExtractor
+from utils.method_code_extractor import MethodExtractor
 from embeddings.bert_based import Bert
-from Database import Database
+from utils.Database import Database
 from joblib import Parallel, delayed
 
 
@@ -100,9 +100,17 @@ def run_process(NUM_WORKERS, process_repo):
 
 if __name__=="__main__":
 
-    print(sys.argv[1])
-    # Read the CSV file and extract the repo links
-    # t = run_process(NUM_WORKERS, process_repo)
+    # print(sys.argv[1])
+    input_file = sys.argv[1]
 
-    # print(time.time()-t)
+    with open(input_file,"r") as f:
+        reader = csv.reader(f)
+        repo_details = [(row[0],row[1]) for row in reader]
+
+    t = time.time()
+
+    #Use Joblib
+    Parallel(n_jobs=NUM_WORKERS)(delayed(process_repo)(repo_detail) for repo_detail in repo_details)
+
+    print(time.time()-t)
 

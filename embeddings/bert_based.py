@@ -1,5 +1,5 @@
 from transformers import  AutoTokenizer, AutoModel, AutoModelForSequenceClassification
-from Database import Database
+from utils.Database import Database
 
 class Bert:
 
