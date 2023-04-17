@@ -18,4 +18,4 @@ export PATH=$PATH:$refresearch/executable/RefactoringMiner/bin
 cd $refresearch
 source res_venv/bin/activate
 
-python data_collector.py /home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/dummy.csv
+python data_collector.py /home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/file_0000.csv

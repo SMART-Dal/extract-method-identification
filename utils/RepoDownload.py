@@ -12,7 +12,7 @@ class CloneRepo:
 
     def clone_repo(self):
 
-        uuid = str(uuid.uuid4())
+        # uuid = str(uuid.uuid4())
 
         clone_path = os.path.join(tempfile.gettempdir(),"auto-ref", self.repo_name)
 

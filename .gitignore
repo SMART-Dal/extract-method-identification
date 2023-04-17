@@ -2,3 +2,6 @@ refactoring-toy-example/
 *venv/
 
 __pycache__/
+
+*.log
+*.out

@@ -21,7 +21,7 @@ class MethodExtractor:
                 continue
             extract_method_list = list(filter(lambda x: x["type"]=="Extract Method",obj["refactorings"]))
             for em_obj in extract_method_list:
-                to_be_refactored_obj = list(filter(lambda x: x["codeElementType"]=="METHOD_DECLARATION",em_obj["leftSideLocations"]))[0]
+                to_be_refactored_obj = list(filter(lambda x: x["codeElementType"]=="METHOD_DECLARATION" and x["description"]=="source method declaration before extraction",em_obj["leftSideLocations"]))[0]
                 refactored_obj = list(filter(lambda x: x["codeElementType"]=="METHOD_DECLARATION" and x["description"]=="source method declaration after extraction",em_obj["rightSideLocations"]))[0]
                 dict_output[obj["sha1"]]={
                     "pos_method":to_be_refactored_obj,
@@ -36,8 +36,11 @@ class MethodExtractor:
             # mod_files = list(filter(lambda x: x.filename==,commit.modified_files))
             for mod_file in commit.modified_files:
 
+                if mod_file.new_path != parsed_json_dict[commit.hash]["neg_method"]["filePath"]:
+                    continue
+
                 self.pos_methods.append(self.__split_and_extract_methods(mod_file.source_code_before,parsed_json_dict[commit.hash]["pos_method"]["startLine"],parsed_json_dict[commit.hash]["pos_method"]["endLine"]))
-                self.neg_methods.append(self.__split_and_extract_methods(mod_file.source_code_before,parsed_json_dict[commit.hash]["pos_method"]["startLine"],parsed_json_dict[commit.hash]["pos_method"]["endLine"]))
+                self.neg_methods.append(self.__split_and_extract_methods(mod_file.source_code,parsed_json_dict[commit.hash]["neg_method"]["startLine"],parsed_json_dict[commit.hash]["neg_method"]["endLine"]))
         
         return self.pos_methods, self.neg_methods
 
