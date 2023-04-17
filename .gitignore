@@ -1,2 +1,4 @@
 refactoring-toy-example/
 *venv/
+
+__pycache__/
