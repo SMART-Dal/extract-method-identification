@@ -35,15 +35,16 @@ def process_repo(repo_details):
         me_obj = MethodExtractor(cloned_path,ref_output_path)
         parsed_json_dict = me_obj.json_parser()
         pos_method_body_list, neg_method_body_list = me_obj.extract_method_body(parsed_json_dict)
-        Remover(cloned_path).remove_folder()
-        Remover(ref_output_path).remove_file()
+        # Remover(cloned_path).remove_folder()
+        # Remover(ref_output_path).remove_file()
     except Exception as e:
         print(f"Error extracting positive and negative methods for {repo_details[0]}")
         print(e)
         return
     
     #Establish DB Connections
-    gc_db = Database("GraphCodeBert_DB")
+    # gc_db = Database("GraphCodeBert_DB")
+    gc_db = Database("test_cc")
     cb_db = Database("CodeBert_DB")
     
     # Generate Embeddings
@@ -106,7 +107,8 @@ def run_process(NUM_WORKERS, process_repo):
 if __name__=="__main__":
 
     # print(sys.argv[1])
-    input_file = sys.argv[1]
+    # input_file = sys.argv[1]
+    input_file = r"D:\DevHub\extract-method-identification\data\test.csv"
 
     with open(input_file,"r") as f:
         reader = csv.reader(f)
