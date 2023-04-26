@@ -20,13 +20,15 @@ class MethodExtractor:
             if len(obj["refactorings"])==0:
                 continue
             extract_method_list = list(filter(lambda x: x["type"]=="Extract Method",obj["refactorings"]))
+            extract_method_details_in_commit = []
             for em_obj in extract_method_list:
                 to_be_refactored_obj = list(filter(lambda x: x["codeElementType"]=="METHOD_DECLARATION" and x["description"]=="source method declaration before extraction",em_obj["leftSideLocations"]))[0]
                 refactored_obj = list(filter(lambda x: x["codeElementType"]=="METHOD_DECLARATION" and x["description"]=="source method declaration after extraction",em_obj["rightSideLocations"]))[0]
-                dict_output[obj["sha1"]]={
+                extract_method_details_in_commit.append({
                     "pos_method":to_be_refactored_obj,
                     "neg_method":refactored_obj
-                }
+                })
+            dict_output[obj["sha1"]]=extract_method_details_in_commit
 
         return dict_output
     
@@ -34,10 +36,18 @@ class MethodExtractor:
         
         for commit in pydriller.Repository(self.repo_path,only_commits=list(parsed_json_dict.keys())).traverse_commits():
             # mod_files = list(filter(lambda x: x.filename==,commit.modified_files))
+            print(commit.hash)
+
+            #File paths with extract method in the 
+            file_paths = list(filter(lambda x: x["filePath"] ,list(filter(lambda x: x["neg_method"] ,parsed_json_dict[commit.hash]))))
             for mod_file in commit.modified_files:
 
-                if mod_file.new_path != parsed_json_dict[commit.hash]["neg_method"]["filePath"]:
+                # if mod_file.new_path.replace("\\","/") != parsed_json_dict[commit.hash]["neg_method"]["filePath"]:
+                #     continue
+                if mod_file.new_path.replace("\\","/") not in file_paths:
                     continue
+
+                # file_paths.
 
                 self.pos_methods.append(self.__split_and_extract_methods(mod_file.source_code_before,parsed_json_dict[commit.hash]["pos_method"]["startLine"],parsed_json_dict[commit.hash]["pos_method"]["endLine"]))
                 self.neg_methods.append(self.__split_and_extract_methods(mod_file.source_code,parsed_json_dict[commit.hash]["neg_method"]["startLine"],parsed_json_dict[commit.hash]["neg_method"]["endLine"]))
