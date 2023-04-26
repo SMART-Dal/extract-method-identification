@@ -12,7 +12,7 @@ class RefMiner:
         try:
             output_path = os.path.join(self.output_path,repo_name+".json")
             os.chdir(self.ref_bin_path)
-            ref_exec = subprocess.run(["sh","RefactoringMiner","-a",repo_path,"-json",output_path],capture_output=True)
+            ref_exec = subprocess.run(["sh","RefactoringMiner","-a",repo_path,"-json",output_path],capture_output=True, shell=True)
             ref_exec.check_returncode()
             os.chdir(self.cwd)
             return output_path
@@ -21,11 +21,11 @@ class RefMiner:
             print(ref_exec.stdout)
             print(error)
             os.chdir(self.cwd)
-            raise Exception("Error running RefactoringMiner in repository - ",repo_path)
+            raise Exception("Error running RefactoringMiner in repository - "+repo_path)
         except Exception as e:
             print(e)
             os.chdir(self.cwd)
-            raise Exception("Error running RefactoringMiner in repository - ",repo_path)
+            raise Exception("Error running RefactoringMiner in repository - "+repo_path)
 
 
 if __name__=="__main__":
