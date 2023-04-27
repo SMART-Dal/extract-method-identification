@@ -2,6 +2,7 @@ from dotenv import dotenv_values
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import subprocess,os
+import psycopg2
 
 class Database:
 
@@ -48,9 +49,28 @@ class Database:
         # collection.update_one(match,{"$set":replacement})
         collection.update_many(match,{"$set":replacement})
 
+class PostgresDatabase:
+
+    def __init__(self) -> None:
+        env_values = dotenv_values(".env")
+        self.connection = psycopg2.connect(dbname=env_values['PG_DB_NAME'],user=env_values['PG_USER'],password=env_values['PG_PASSWORD'],host=env_values['PG_HOST'])
+        self.cursor = self.connection.cursor()
+
+
+        
+
 if __name__=="__main__":
-    db = Database("test_cc")
-    db.insert_docs([{"Test from CC":True}])
-    os.chdir("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/executable/RefactoringMiner/bin")
-    sproc = subprocess.run(["sh","RefactoringMiner","-h"],capture_output=True)
-    print(sproc.stderr)
+
+    pg_obj = PostgresDatabase()
+    print(pg_obj.cursor)
+    # pg_obj.cursor.execute("SELECT * FROM pos-neg-source-code")
+    # pg_obj.cursor.execute("SELECT RepoDetails FROM information_schema.tables WHERE table_schema = 'public'")
+    pg_obj.cursor.execute("INSERT INTO repodetails (repo_name, repo_url) VALUES (%s, %s) returning \"_Id\"", ("test1", "test2"))
+    pg_obj.connection.commit()
+    print(pg_obj.cursor.fetchone()[0])
+
+    # db = Database("test_cc")
+    # db.insert_docs([{"Test from CC":True}])
+    # os.chdir("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/executable/RefactoringMiner/bin")
+    # sproc = subprocess.run(["sh","RefactoringMiner","-h"],capture_output=True)
+    # print(sproc.stderr)
