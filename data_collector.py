@@ -1,4 +1,4 @@
-import csv,time, sys, json, os
+import csv,time, sys, json, os, concurrent.futures
 from multiprocessing import Pool, Lock
 from pymongo import MongoClient
 from utils.RepoDownload import CloneRepo
@@ -167,8 +167,12 @@ if __name__=="__main__":
     t = time.time()
 
     # Use multiprocessing to process the repos in parallel
-    with Pool(NUM_WORKERS) as p:
-        p.map(process_repo, repo_details)
+    # with Pool(NUM_WORKERS) as p:
+    #     p.map(process_repo, repo_details)
+
+    #Use MultiThread
+    with concurrent.futures.ThreadPoolExecutor(NUM_WORKERS) as executor:
+        executor.map(process_repo, repo_details)
 
 
     # #Use Joblib
