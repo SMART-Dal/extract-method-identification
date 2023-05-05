@@ -12,7 +12,16 @@ class RefMiner:
         self.output_path = os.path.join(os.getcwd(),"refactoring_identifier","output")
     def exec_refactoring_miner(self, repo_path,repo_name):
         try:
+            if not os.path.exists(self.output_path):
+                os.mkdir(self.output_path)
+
             output_path = os.path.join(self.output_path,repo_name+".json")
+
+            try:
+                java_proc = subprocess.run(["java","-version"],capture_output=True, shell=shell)
+                java_proc.check_returncode()
+            except Exception as ex:
+                print("Java error")
             os.chdir(self.ref_bin_path)
             shell = True
             if sys.platform == 'linux':
