@@ -21,6 +21,8 @@ class RefMiner:
             ref_exec = subprocess.run(["sh","RefactoringMiner","-a",repo_path,"-json",output_path],capture_output=True, shell=shell)
             ref_exec.check_returncode()
             os.chdir(self.cwd)
+            print(os.path.exists(output_path))
+            print(os.listdir(self.output_path))
             return output_path
 
         except subprocess.CalledProcessError as error:
