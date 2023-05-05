@@ -6,21 +6,21 @@ from refactoring_identifier.RefMiner import RefMiner
 from utils.file_folder_remover import Remover
 from utils.method_code_extractor import MethodExtractor
 from embeddings.bert_based import Bert
-from utils.Database import Database, PostgresDatabase
+from utils.Database import Database
 from joblib import Parallel, delayed
 from dotenv import dotenv_values
 
 
 # Define the number of workers to use for parallel processing
-NUM_WORKERS = 4
+NUM_WORKERS = 6
 
 #Lock
 lock = Lock()
 
 # Function to clone a Git repo, run a Java program, and parse the output
-def process_repo(repo_details):
+def process_repo(repo_details,output_file_name):
 
-    
+    print("Start analyzing for repo - "+repo_details[0])
     #Clone the repo
     try:
         cloned_path = CloneRepo(repo_details[0], repo_details[1]).clone_repo()
@@ -85,9 +85,17 @@ def process_repo(repo_details):
         if not os.path.exists(out_jsonl_path):
             os.mkdir(out_jsonl_path)
         
-        with open(os.path.join(out_jsonl_path,dotenv_values(".env")["output_file_name"]), 'a') as f: # os.environ["output_file_name"] doesn't work in MP
+        # with open(os.path.join(out_jsonl_path,dotenv_values(".env")["output_file_name"]), 'a') as f: # os.environ["output_file_name"] doesn't work in MP
+        #     f.write(json.dumps(db_dict) + "\n")
+        #     f.flush()
+        #     f.close()
+
+        with open(os.path.join(out_jsonl_path,output_file_name), 'a') as f: # os.environ["output_file_name"] doesn't work in MP
             f.write(json.dumps(db_dict) + "\n")
+            f.flush()
+            f.close()
     
+    print("End analysis for repo - "+repo_details[0])
     # Generate Embeddings
     # try:
     #     gc_embedding_object = Bert("microsoft/graphcodebert-base")
@@ -148,8 +156,9 @@ def run_process(NUM_WORKERS, process_repo):
 if __name__=="__main__":
 
     # print(sys.argv[1])
-    # input_file = sys.argv[1]
-    input_file = "/home/ip1102/Ref-Res/extract-method-identification/data/test.csv"
+    input_file = sys.argv[1]
+    output_file_name = sys.argv[2]
+    # input_file = "/home/ip1102/Ref-Res/extract-method-identification/data/test.csv"
 
     with open(input_file,"r") as f:
         reader = csv.reader(f)
@@ -159,7 +168,7 @@ if __name__=="__main__":
 
     # Use multiprocessing to process the repos in parallel
     with Pool(NUM_WORKERS) as p:
-        p.map(process_repo, repo_details)
+        p.map(process_repo, repo_details, output_file_name)
 
 
     # #Use Joblib
