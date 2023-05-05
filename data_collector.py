@@ -18,7 +18,7 @@ NUM_WORKERS = 6
 lock = Lock()
 
 # Function to clone a Git repo, run a Java program, and parse the output
-def process_repo(repo_details,output_file_name):
+def process_repo(repo_details):
 
     print("Start analyzing for repo - "+repo_details[0])
     #Clone the repo
@@ -168,7 +168,7 @@ if __name__=="__main__":
 
     # Use multiprocessing to process the repos in parallel
     with Pool(NUM_WORKERS) as p:
-        p.map(process_repo, repo_details, output_file_name)
+        p.map(process_repo, repo_details)
 
 
     # #Use Joblib

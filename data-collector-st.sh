@@ -2,13 +2,14 @@
 #SBATCH --mem=128G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
-#SBATCH --time=48:0:0   
+#SBATCH --time=1:0:0   
 #SBATCH --mail-user=indranil.palit@dal.ca
 #SBATCH --mail-type=ALL
 
 
 function handle_signal {
-    rsync -avz --remove-source-files $SLURM_TMPDIR/extract-method-identification/data/output $refresearch/data/output
+    echo 'Moving File'
+    rsync -avz --remove-source-files $SLURM_TMPDIR/extract-method-identification/data/output/test.jsonl $refresearch/data/output
 }
 
 trap handle_signal SIGUSR1
@@ -28,6 +29,7 @@ export JAVA_TOOL_OPTIONS="-Xms256m -Xmx5g"
 export PATH=$PATH:$SLURM_TMPDIR/extract-method-identification/executable/RefactoringMiner/bin
 
 python -m venv res_venv
+# cp $refresearch/res_venv .
 source res_venv/bin/activate
 pip install -r requirements.txt
 
