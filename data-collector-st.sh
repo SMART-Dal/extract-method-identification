@@ -20,6 +20,8 @@ git clone git@github.com:SMART-Dal/extract-method-identification.git
 
 cd ./extract-method-identification
 
+git checkout ref-instance-fix
+
 module purge
 
 module load java/17.0.2
