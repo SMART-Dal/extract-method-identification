@@ -7,9 +7,14 @@ class RefMiner:
 
     def __init__(self) -> None:
         
-        self.cwd = os.getcwd()
-        self.ref_bin_path = os.path.join(os.getcwd(),"refactoring_identifier","executable","RefactoringMiner","bin")
-        self.output_path = os.path.join(os.getcwd(),"refactoring_identifier","output")
+        # self.cwd = os.getcwd()
+        # self.ref_bin_path = os.path.join(os.getcwd(),"refactoring_identifier","executable","RefactoringMiner","bin")
+        # self.output_path = os.path.join(os.getcwd(),"refactoring_identifier","output")
+
+        self.cwd = os.path.join(os.environ['SLURM_TMPDIR'],'extract-method-identification')
+        self.ref_bin_path = os.path.join(self.cwd,"refactoring_identifier","executable","RefactoringMiner","bin")
+        self.output_path = os.path.join(self.cwd,"refactoring_identifier","output")
+
     def exec_refactoring_miner(self, repo_path,repo_name):
         try:
             if not os.path.exists(self.output_path):
