@@ -2,7 +2,7 @@
 #SBATCH --mem=128G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
-#SBATCH --time=24:0:0   
+#SBATCH --time=48:0:0   
 #SBATCH --mail-user=indranil.palit@dal.ca
 #SBATCH --mail-type=ALL
 
@@ -18,4 +18,4 @@ export PATH=$PATH:$refresearch/executable/RefactoringMiner/bin
 cd $refresearch
 source res_venv/bin/activate
 
-python data_collector.py /home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/file_0004.csv
+python data_collector.py /home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/file_0000.csv
