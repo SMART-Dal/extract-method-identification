@@ -18,10 +18,11 @@ class RefMiner:
             output_path = os.path.join(self.output_path,repo_name+".json")
 
             try:
-                java_proc = subprocess.run(["java","-version"],capture_output=True, shell=shell)
+                java_proc = subprocess.run(["java","-version"],capture_output=True, shell=False)
                 java_proc.check_returncode()
             except Exception as ex:
                 print("Java error")
+                print(ex)
             os.chdir(self.ref_bin_path)
             shell = True
             if sys.platform == 'linux':
@@ -38,7 +39,7 @@ class RefMiner:
             print(ref_exec.stdout)
             print(error)
             os.chdir(self.cwd)
-            raise Exception("Error running RefactoringMiner in repository - "+repo_path)
+            raise Exception("Error running RefactoringMiner in repository (CSP) - "+repo_path)
         except Exception as e:
             print(e)
             os.chdir(self.cwd)
