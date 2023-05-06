@@ -2,7 +2,7 @@
 #SBATCH --mem=128G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
-#SBATCH --time=1:0:0   
+#SBATCH --time=3:0:0   
 #SBATCH --mail-user=indranil.palit@dal.ca
 #SBATCH --mail-type=ALL
 
@@ -35,5 +35,5 @@ python -m venv res_venv
 source res_venv/bin/activate
 pip install -r requirements.txt
 
-python data_collector.py ./data/test.csv test.jsonl
+python data_collector.py ./data/file_0000.csv file_0000.jsonl
 
