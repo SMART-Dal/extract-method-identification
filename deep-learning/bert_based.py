@@ -45,7 +45,7 @@ class Bert:
             doc_count += 1
             print(f'Embedding added for doc_id:{doc_id} | Remaining: {collection_len}.')
 
-    @staticmethod
+    
     def generate_individual_embedding(self,code_snippet):
         tokenized_input_pos = self.tokenizer(code_snippet, return_tensors="pt", padding=True, truncation=True)
         output = self.model(**tokenized_input_pos)
@@ -53,14 +53,14 @@ class Bert:
 
         return embedding
     
-    @staticmethod
-    def embedding_generator(data_batch):
+    
+    def embedding_generator(self,data_batch):
         for item in data_batch:
             positive_case_methods = item['positive_case_methods']
             negative_case_methods = item['negative_case_methods']
 
-            positive_embeddings = Bert.generate_individual_embedding(positive_case_methods)
-            negative_embeddings = Bert.generate_individual_embedding(negative_case_methods)
+            positive_embeddings = self.generate_individual_embedding(positive_case_methods)
+            negative_embeddings = self.generate_individual_embedding(negative_case_methods)
 
             yield positive_embeddings, negative_embeddings
 

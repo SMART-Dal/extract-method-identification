@@ -52,7 +52,7 @@ class AE:
                 batch = data[i * batch_size: (i + 1) * batch_size]
 
                 merged_embeddings = []
-                for positive_embeddings, negative_embeddings in Bert.embedding_generator(batch):
+                for positive_embeddings, negative_embeddings in Bert().embedding_generator(batch):
                     merged_embeddings += (positive_embeddings + negative_embeddings)
 
                 yield np.asarray(merged_embeddings), np.asarray(merged_embeddings)
