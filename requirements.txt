@@ -4,3 +4,4 @@ pymongo==4.3.3
 python-dotenv==1.0.0
 transformers==4.27.2
 tensorflow
+torch
