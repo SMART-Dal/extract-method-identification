@@ -82,7 +82,7 @@ class AE:
         # autoencoder.fit(self.data_generator(data,8), epochs=50, steps_per_epoch=len(data) // 8)
 
         print("Fit model")
-        autoencoder.fit(self.data_generator(data,8), epochs=50, steps_per_epoch=len(data) // 8,
+        autoencoder.fit(self.data_generator(data,8), epochs=15, steps_per_epoch=len(data) // 8,
                         callbacks=[model_checkpoint_callback, csv_logger_callback, early_stopping_callback])
 
 if __name__=="__main__":
