@@ -33,7 +33,7 @@ class AE:
     def __get_data_from_jsonl(self):
 
         data = []
-        with open(self.path, 'r') as file:
+        with open(self.data_file, 'r') as file:
             for line in file:
                 item = json.loads(line)
                 if len(item['positive_case_methods'])==0:
@@ -65,8 +65,13 @@ class AE:
                     save_best_only=True  # Save only the best model
                 )
     def model_train(self):
+
+        print("Start training")
+
+        print("Parse jsonl file for training")
         data = self.__get_data_from_jsonl() #Change it
 
+        print("Get autoencoder model")
         autoencoder = self.__get_autoencoder(768,32)
 
         autoencoder.compile(optimizer='adam', loss='mse')
@@ -75,6 +80,8 @@ class AE:
 
         model_checkpoint_callback = self.save_checkpoint()
         # autoencoder.fit(self.data_generator(data,8), epochs=50, steps_per_epoch=len(data) // 8)
+
+        print("Fit model")
         autoencoder.fit(self.data_generator(data,8), epochs=50, steps_per_epoch=len(data) // 8,
                         callbacks=[model_checkpoint_callback, csv_logger_callback, early_stopping_callback])
 
