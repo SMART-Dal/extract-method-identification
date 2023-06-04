@@ -24,4 +24,8 @@ class PipelineHealth:
 
 
 if __name__=="__main__":
-    PipelineHealth()
+    list1 = [1,2,3]
+    list2 = [4,5,6]
+    lst = list1+list2
+    print(lst)
+    # PipelineHealth()
