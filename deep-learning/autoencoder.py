@@ -1,12 +1,14 @@
-from transformers import  AutoTokenizer, AutoModel, AutoModelForSequenceClassification
-import json, torch, tensor
+import json, sys
 from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras.models import Model
-from ..embeddings.bert_based import Bert
+from bert_based import Bert
 import numpy as np
 from keras.callbacks import ModelCheckpoint, CSVLogger, EarlyStopping
 
 class AE:
+
+    def __init__(self, path) -> None:
+        self.data_file = path
 
     def __get_autoencoder(self,n_inputs,latent_space_dim=32):
 
@@ -28,10 +30,10 @@ class AE:
         return autoencoder
     
     
-    def __get_data_from_jsonl(path):
+    def __get_data_from_jsonl(self):
 
         data = []
-        with open(path, 'r') as file:
+        with open(self.path, 'r') as file:
             for line in file:
                 item = json.loads(line)
                 if len(item['positive_case_methods'])==0:
@@ -40,7 +42,7 @@ class AE:
         
         return data
 
-    def data_generator(data, batch_size):
+    def data_generator(self,data, batch_size):
         num_samples = len(data)
         steps_per_epoch = num_samples // batch_size
 
@@ -63,7 +65,7 @@ class AE:
                     save_best_only=True  # Save only the best model
                 )
     def model_train(self):
-        data = self.__get_data_from_jsonl('/content/file_0000.jsonl') #Change it
+        data = self.__get_data_from_jsonl() #Change it
 
         autoencoder = self.__get_autoencoder(768,32)
 
@@ -77,6 +79,7 @@ class AE:
                         callbacks=[model_checkpoint_callback, csv_logger_callback, early_stopping_callback])
 
 if __name__=="__main__":
-    AE.model_train()
+    input_file = sys.argv[1]
+    AE(input_file).model_train()
 
 
