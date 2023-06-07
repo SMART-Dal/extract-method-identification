@@ -1,4 +1,5 @@
 from transformers import  AutoTokenizer, AutoModel, AutoModelForSequenceClassification
+import torch
 
 class Bert:
 
@@ -63,6 +64,18 @@ class Bert:
             negative_embeddings = self.generate_individual_embedding(negative_case_methods)
 
             yield positive_embeddings, negative_embeddings
+
+
+    def gen_embeddings(self,code):
+
+        tokenized_input_pos = self.tokenizer(code, return_tensors="pt", padding=True, truncation=True)
+        with torch.no_grad():
+            output = self.model(**tokenized_input_pos)
+        embedding = output.last_hidden_state.mean(dim=1).squeeze().tolist()
+        if len(code)==1:
+            return [embedding]
+        else:
+            return embedding
 
 
 

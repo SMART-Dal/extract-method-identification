@@ -2,7 +2,7 @@
 #SBATCH --mem=128G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
-#SBATCH --time=0:15:0   
+#SBATCH --time=6:0:0   
 #SBATCH --mail-user=indranil.palit@dal.ca
 #SBATCH --mail-type=ALL
 #SBATCH --signal=B:USR1@180
