@@ -1,5 +1,5 @@
 from transformers import  AutoTokenizer, AutoModel, AutoModelForSequenceClassification
-import torch
+import torch, numpy as np
 
 class Bert:
 
@@ -13,7 +13,7 @@ class Bert:
             self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
     # Irrelevant
-    def generate_embeddings(self):
+    def generate_embeddings_old(self):
         database = Database("refactoring_details_neg")
         # database.connect_db()
         # collection = database.fetch_collection("refactoring_information")
@@ -77,6 +77,37 @@ class Bert:
         else:
             return embedding
 
+
+
+    def generate_embeddings(self,code,device="cuda"):
+
+        print("Device - ", device)
+        print("Start Emb Extraction")
+
+        # tokenized_data = [self.tokenizer.encode(text, padding='max_length', truncation=True,max_length=177) for text in code]
+        # input_ids = torch.tensor(tokenized_data).to(device)
+
+        inputs = code.to(device)
+
+        # inputs = self.tokenizer(code, padding=True, truncation=True, return_tensors='pt')
+
+        # inputs = {k: v.to(device) for k, v in inputs.items()}  # Move inputs to GPU
+
+        # inputs = {k: v.to(device) for k, v in input_ids.items()}
+        model = self.model.to(device)
+        outputs = model(inputs)
+
+        # embeddings = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()
+
+
+        embeddings = outputs.last_hidden_state[:, 0, :]
+        
+
+        # embeddings = np.asarray(embeddings)
+        # print(embeddings.shape)
+
+        print(type(embeddings))
+        return embeddings
 
 
 
