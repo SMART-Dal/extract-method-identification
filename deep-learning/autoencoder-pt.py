@@ -1,9 +1,9 @@
-import torch, json, pickle
+import torch, json, pickle, time, numpy as np, sys
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-# from transformers import BertModel, BertTokenizer
 from bert_based import Bert
+from sklearn.model_selection import train_test_split
 
 class Autoencoder(nn.Module):
     def __init__(self, n_inputs, encoding_dim):
@@ -39,8 +39,8 @@ class Autoencoder(nn.Module):
 
 def __get_data_from_jsonl(data_file):
 
-    data = []
-    max_p = 0
+    data, labels = [], []
+    max_p, max_n = 0, 0
     with open(data_file, 'r') as file:
         for line in file:
             item = json.loads(line)
@@ -49,71 +49,115 @@ def __get_data_from_jsonl(data_file):
             if len(item['positive_case_methods'])>max_p:
                 max_p=len(item['positive_case_methods'])
             data+=item['positive_case_methods']
+            # labels+=[1 for i in range(len(item))]
+            labels.extend([1]*len(item['positive_case_methods']))
+            data+=item['negative_case_methods']
+            # labels+=[1 for i in range(len(item))]
+            labels.extend([0]*len(item['positive_case_methods']))
+        try:
+            assert len(labels)==len(data)
+        except AssertionError as e:
+            print(len(labels))
+            print(len(data))
+    print("Total samples - ", len(data))
+    print("Maximum methods per case in a repo - ", max_p)
+    return data, labels
 
-    return data
+def get_train_val_split(data, labels):
+    
+    train_data, test_data, _, _ = train_test_split(data,labels, test_size=0.2, stratify=labels)
+    print(f"Training sample length - {len(train_data)}. Validation Sample Length - {len(test_data)}")
+    return train_data, test_data
 
-def train_autoencoder(data, batch_size, num_epochs, device="cuda", save_interval=1):
+
+
+def train_autoencoder(data, batch_size, num_epochs,n_inputs,encoding_dim, save_interval=1, valid_data=None, model_shorthand="gc"):
     num_batches = len(data) // batch_size
 
-    data_loader = DataLoader(data, batch_size=batch_size, shuffle=True)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    train_data_loader = DataLoader(data, batch_size=batch_size, shuffle=True)
+    if valid_data:
+        valid_data_loader = DataLoader(valid_data, batch_size=batch_size, shuffle=True)
 
     bert = Bert("microsoft/graphcodebert-base")
-
-    # n_inputs = data.size(1)  # Input dimension
-    n_inputs = 768
-    encoding_dim = 32  # Latent space dimension
-
     autoencoder = Autoencoder(n_inputs, encoding_dim)
     autoencoder = autoencoder.to(device)  # Move model to GPU
     criterion = nn.MSELoss()
     optimizer = optim.Adam(autoencoder.parameters(), lr=0.001)
 
     scaler = torch.cuda.amp.GradScaler()  # Mixed precision training scaler
-    losses = []
+    train_losses, val_losses = [], []
 
     for epoch in range(num_epochs):
-        for i, batch_data in enumerate(data_loader):
-            epoch_loss = 0.0
-            print(len(batch_data))
-            # print(batch_data)
+
+        start_time = time.time()
+        train_loss = 0.0
+        autoencoder.train()
+        for _, batch_data in enumerate(train_data_loader):
+
             # batch_data = batch_data.to(device)  # Move batch data to GPU
-            tokenized_data = [bert.tokenizer.encode(text, padding='max_length', truncation=True, max_length=177) for text in batch_data]
+            tokenized_data = [bert.tokenizer.encode(text, padding='max_length', truncation=True, max_length=512) for text in batch_data]
             input_ids = torch.tensor(tokenized_data).to(device)
-            # Generate embeddings using BERT
+
             with torch.cuda.amp.autocast():
                 embeddings = bert.generate_embeddings(input_ids)
 
-            # Zero the gradients
             optimizer.zero_grad()
-
-            # Forward pass
             outputs = autoencoder(embeddings)
-
-            # Compute loss
             loss = criterion(outputs, embeddings)
 
-            # Backward pass and optimization
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
 
-            epoch_loss += loss.item()
+            train_loss += loss.item()
 
-            print('Epoch [{}/{}], Batch [{}/{}], Loss: {:.4f}'.format(
-                epoch + 1, num_epochs, i + 1, num_batches, loss.item()))
+        # epoch_train_loss = train_loss / len(train_data_loader)
+        alpha = len(train_data_loader) // batch_size
+        epoch_train_loss = train_loss / alpha
+        train_losses.append(epoch_train_loss)
+
+        if valid_data:
+            autoencoder.eval()
+            val_loss = 0.0
+            # with torch.no_grad():
+            for _, val_batch_data in enumerate(valid_data_loader):
+                val_tokenized_data = [bert.tokenizer.encode(text, padding='max_length', truncation=True, max_length=512) for text in val_batch_data]
+                val_input_ids = torch.tensor(val_tokenized_data).to(device)
+
+                with torch.cuda.amp.autocast():
+                    val_embeddings = bert.generate_embeddings(val_input_ids)
+
+                val_outputs = autoencoder(val_embeddings)
+                val_loss = criterion(val_outputs,val_embeddings)
+
+                val_loss+=val_loss.item()
             
-        epoch_loss /= num_batches
-        losses.append(epoch_loss)
+            # epoch_val_loss = val_loss / len(valid_data_loader)
+            alpha = len(valid_data_loader) // batch_size
+            epoch_val_loss = val_loss / alpha
+            val_losses.append(epoch_val_loss)
+
+        print(f'Epoch {epoch+1} \t\t Training Loss: {epoch_train_loss} \t\t Validation Loss: {epoch_val_loss}')
+
+        # print('Epoch [{}/{}], Loss: {:.4f}'.format(
+        #     epoch + 1, num_epochs, train_loss/len(train_data_loader)))
+        
+        print(f"Time for epoch {epoch+1} - ", time.time()-start_time)
 
         if (epoch + 1) % save_interval == 0:
-            checkpoint_path = f"autoencoder_epoch_{epoch + 1}.pth"
+            checkpoint_path = f"./trained_models/autoencoder_{model_shorthand}_512_{encoding_dim}_{epoch + 1}.pth"
             torch.save(autoencoder.state_dict(), checkpoint_path)
             print(f"Model checkpoint saved at epoch {epoch + 1}")
     
     # Save losses list
-    with open('losses.pkl', 'wb') as f:
-        pickle.dump(losses, f)
-    print(f"Training losses saved at losses.pkl")
+    with open('train_losses.pkl', 'wb') as f:
+        pickle.dump(train_losses, f)
+
+    with open('val_losses.pkl', 'wb') as f:
+        pickle.dump(val_losses, f)
+    # print(f"Training losses saved at losses.pkl")
 
     return autoencoder
 
@@ -135,7 +179,7 @@ def get_bottleneck_representation(code,device="cuda"):
 
 
     bert = Bert("microsoft/graphcodebert-base")
-    tokenized_text = bert.tokenizer.encode(code, padding='max_length', truncation=True, max_length=177)
+    tokenized_text = bert.tokenizer.encode(code, padding='max_length', truncation=True, max_length=177) # Works for single code
     input_ids = torch.tensor(tokenized_text).unsqueeze(0).to(device)
     # inputs = input_ids.to(device)
     # gcb_model=bert.model.to(device)
@@ -146,5 +190,7 @@ def get_bottleneck_representation(code,device="cuda"):
     return bottleneck_representation
 
 if __name__=="__main__":
-    data = __get_data_from_jsonl("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/archive/file_0000.jsonl")
-    train_autoencoder(data,8,10)
+    data, labels = __get_data_from_jsonl("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/archive/file_0000.jsonl")
+    train_data, valid_data = get_train_val_split(data, labels)
+    dim = sys.argv[1]
+    train_autoencoder(train_data,8,50,768,dim,save_interval=10, valid_data=valid_data,model_shorthand="gc")
