@@ -121,18 +121,18 @@ def train_autoencoder(data, batch_size, num_epochs,n_inputs,encoding_dim, save_i
         if valid_data:
             autoencoder.eval()
             val_loss = 0.0
-            # with torch.no_grad():
-            for _, val_batch_data in enumerate(valid_data_loader):
-                val_tokenized_data = [bert.tokenizer.encode(text, padding='max_length', truncation=True, max_length=512) for text in val_batch_data]
-                val_input_ids = torch.tensor(val_tokenized_data).to(device)
+            with torch.no_grad():
+                for _, val_batch_data in enumerate(valid_data_loader):
+                    val_tokenized_data = [bert.tokenizer.encode(text, padding='max_length', truncation=True, max_length=512) for text in val_batch_data]
+                    val_input_ids = torch.tensor(val_tokenized_data).to(device)
+                    torch.cuda.empty_cache()
+                    with torch.cuda.amp.autocast():
+                        val_embeddings = bert.generate_embeddings(val_input_ids)
 
-                with torch.cuda.amp.autocast():
-                    val_embeddings = bert.generate_embeddings(val_input_ids)
+                    val_outputs = autoencoder(val_embeddings)
+                    val_loss = criterion(val_outputs,val_embeddings)
 
-                val_outputs = autoencoder(val_embeddings)
-                val_loss = criterion(val_outputs,val_embeddings)
-
-                val_loss+=val_loss.item()
+                    val_loss+=val_loss.item()
             
             # epoch_val_loss = val_loss / len(valid_data_loader)
             alpha = len(valid_data_loader) // batch_size
@@ -192,5 +192,4 @@ def get_bottleneck_representation(code,device="cuda"):
 if __name__=="__main__":
     data, labels = __get_data_from_jsonl("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/archive/file_0000.jsonl")
     train_data, valid_data = get_train_val_split(data, labels)
-    dim = sys.argv[1]
-    train_autoencoder(train_data,8,50,768,dim,save_interval=10, valid_data=valid_data,model_shorthand="gc")
+    train_autoencoder(train_data,8,50,768,32,save_interval=10, valid_data=valid_data,model_shorthand="gc")
