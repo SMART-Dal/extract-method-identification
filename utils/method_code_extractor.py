@@ -1,5 +1,6 @@
 import pydriller, json
-from utils.file_folder_remover import Remover
+# from utils.file_folder_remover import Remover
+from file_folder_remover import Remover
 
 class MethodExtractor:
 
@@ -90,6 +91,8 @@ class MethodExtractor:
         for commit in pydriller.Repository(self.repo_path,only_commits=list(parsed_json_dict.keys())).traverse_commits():
 
             modified_file_list  = commit.modified_files
+
+            len_pos_methods = len(self.pos_methods)
             
             file_paths = [x.new_path for x in modified_file_list]
             for pos_id,meta_data in enumerate(parsed_json_dict[commit.hash]["neg_method"]):
@@ -98,6 +101,10 @@ class MethodExtractor:
             
                 self.pos_methods.append(self.__split_and_extract_methods(mod_file.source_code_before,parsed_json_dict[commit.hash]["pos_method"][pos_id]["startLine"],parsed_json_dict[commit.hash]["pos_method"][pos_id]["endLine"]))
                 self.neg_methods.append(self.__split_and_extract_methods(mod_file.source_code,meta_data["startLine"],meta_data["endLine"]))
+
+                if len(self.pos_methods)>len_pos_methods:
+                    print((len(self.pos_methods)>len_pos_methods)/len(mod_file.methods_before))
+                    
 
         return self.pos_methods, self.neg_methods
 
