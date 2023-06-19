@@ -108,7 +108,7 @@ class AE:
         n_epochs = 10
         
 
-        autoencoder.compile(optimizer='adam', loss='mse', run_eagerly=True)
+        autoencoder.compile(optimizer='adam', loss='mse')
         csv_logger_callback = CSVLogger('loss_curves.csv')
         early_stopping_callback = EarlyStopping(patience=3, restore_best_weights=True)
 

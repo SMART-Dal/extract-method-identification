@@ -1,14 +1,18 @@
 #!/bin/bash
-#SBATCH --mem=128G
+#SBATCH --mem=64G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
-#SBATCH --time=12:0:0   
+#SBATCH --time=3:0:0   
 #SBATCH --mail-user=indranil.palit@dal.ca
 #SBATCH --mail-type=ALL
 #SBATCH --signal=B:USR1@180
 
-output_file_name=file_0002.jsonl
-input_file_name=file_0002.csv
+# output_file_name=file_0002.jsonl
+# input_file_name=file_0002.csv
+
+output_file_name=test.jsonl
+input_file_name=test.csv
+
 echo "Start"
 
 handle_signal() 

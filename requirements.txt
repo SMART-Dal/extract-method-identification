@@ -5,4 +5,4 @@ python-dotenv==1.0.0
 transformers==4.27.2
 tensorflow
 torch
-cikit-learn
+scikit-learn

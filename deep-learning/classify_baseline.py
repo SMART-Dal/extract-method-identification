@@ -6,7 +6,6 @@ from bert_based import Bert
 from autoencoder_pn import Autoencoder
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
-from decimal import Decimal
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -73,7 +72,6 @@ class CustomDataset(Dataset):
         label = self.labels[idx]
         return feature, label
 
-
 class EarlyStopper:
     def __init__(self, patience=1, min_delta=0):
         self.patience = patience
@@ -90,6 +88,19 @@ class EarlyStopper:
             if self.counter >= self.patience:
                 return True
         return False
+
+def save_models(train_loss_path,val_loss_path, model_path,train_losses, val_losses, model):
+
+    # Save losses list
+    with open(train_loss_path, 'wb') as f:
+        pickle.dump(train_losses, f)
+
+    with open(val_loss_path, 'wb') as f:
+        pickle.dump(val_losses, f)
+
+    # Save the trained model
+    torch.save(model.state_dict(), model_path)
+
 
 def load_autoencoder_model(model_path, n_inputs, encoding_dim, device):
     autoencoder = Autoencoder(n_inputs, encoding_dim)
@@ -123,29 +134,37 @@ def perform_pca(data, n_components):
     projected_data = torch.from_numpy(projected_data_np)
     return projected_data
 
-def train_lr(data, labels, input_dim,num_classes):
+def train_lr(data, labels, input_dim,num_classes, val_data=None, val_labels=None):
 
 
-    learning_rate = 0.001
+    learning_rate = 1e-5
     batch_size = 16
-    num_epochs = 10
+    num_epochs = 150
 
     bert = Bert("microsoft/graphcodebert-base")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    # data = torch.randn(1000, input_dim)
-    # labels = torch.randint(0, num_classes, (1000,))
 
-    # dataset = torch.utils.data.TensorDataset(torch.tensor(data), torch.tensor(labels))
     dataset = CustomDataset(data, labels)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+    if val_data:
+        val_dataset = CustomDataset(val_data,val_labels)
+        val_dataloader = DataLoader(val_dataset,batch_size=batch_size, shuffle=True)
 
     model = LogisticRegression(input_dim, num_classes).to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
+    train_losses, val_losses = [], []
+
+    early_stopper = EarlyStopper(patience=3, min_delta=10)    
+
     for epoch in range(num_epochs):
+        start_time = time.time()
+        model.train()
+        train_loss=0.0
         for inputs, targets in dataloader:            
             # batch_data = batch_data.to(device)  # Move batch data to GPU
             tokenized_data = [bert.tokenizer.encode(text, padding='max_length', truncation=True, max_length=512) for text in inputs]
@@ -154,7 +173,6 @@ def train_lr(data, labels, input_dim,num_classes):
             with torch.cuda.amp.autocast():
                 embeddings = bert.generate_embeddings(input_ids)
 
-            print(embeddings.shape)
             embeddings = embeddings.to(device)
             targets = targets.to(device)
 
@@ -165,10 +183,45 @@ def train_lr(data, labels, input_dim,num_classes):
             loss.backward()
             optimizer.step()
 
-        print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item()}')
+            train_loss+=loss.item()
 
-    # Save the trained model
-    torch.save(model.state_dict(), './trained_models/logistic_regression_model.pth')
+        if val_data:
+            model.eval()
+            val_loss_sum=0.0
+            with torch.no_grad():
+                for val_inputs, val_targets in val_dataloader:
+                    val_tokenized_data = [bert.tokenizer.encode(text, padding='max_length', truncation=True, max_length=512) for text in val_inputs]
+                    val_input_ids = torch.tensor(val_tokenized_data).to(device)
+                    torch.cuda.empty_cache()
+                    with torch.cuda.amp.autocast():
+                        val_embeddings = bert.generate_embeddings(val_input_ids)
+
+                    val_embeddings = val_embeddings.to(device)
+                    val_targets = val_targets.to(device)
+                    
+                    val_outputs = model(val_embeddings)
+                    val_loss = criterion(val_outputs,val_targets)
+
+                    val_loss_sum+=val_loss.item()
+        
+            alpha = len(val_dataloader) // batch_size
+            epoch_val_loss = val_loss_sum / alpha
+            val_losses.append(epoch_val_loss)                 
+
+        alpha = len(dataloader) // batch_size
+        epoch_train_loss = train_loss / alpha
+        train_losses.append(epoch_train_loss)
+
+        print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {epoch_train_loss}, Val Loss: {epoch_val_loss}')
+        print(f"Time for epoch {epoch+1} - ", time.time()-start_time)
+
+        if early_stopper.early_stop(validation_loss=epoch_val_loss):
+            save_models(f'./metrics/train_losses_lr_{input_dim}.pkl',f'./metrics/val_losses_lr_{input_dim}.pkl',f'./trained_models/logistic_regression_model_{input_dim}.pth',
+                        train_losses, val_losses, model)
+            break
+        
+    save_models(f'./metrics/train_losses_lr_{input_dim}.pkl',f'./metrics/val_losses_lr_{input_dim}.pkl',f'./trained_models/logistic_regression_model_{input_dim}.pth',
+                train_losses, val_losses, model)
 
 def train_lr_ae(data, labels, input_dim,num_classes, val_data=None, val_labels=None):
 
@@ -328,10 +381,11 @@ def train_lr_pca(data, labels, input_dim,num_classes):
     torch.save(model.state_dict(), './trained_models/logistic_regression_model.pth')
 
 
+
 if __name__=="__main__":
     # TODO - Change get_bottleneck
     data, labels = __get_data_from_jsonl("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/output/file_0001.jsonl")
     train_data, test_data, train_label, test_label = get_train_test_val_split(data,labels)
-    # train_lr(data, labels, 768, 2)
-    train_lr_ae(train_data, train_label, 128, 2, test_data, test_label)
+    train_lr(data, labels, 768, 2, test_data, test_label)
+    # train_lr_ae(train_data, train_label, 128, 2, test_data, test_label)
     # train_lr_pca(data, labels, 2, 2)
