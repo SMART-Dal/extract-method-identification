@@ -103,7 +103,7 @@ class MethodExtractor:
                 self.neg_methods.append(self.__split_and_extract_methods(mod_file.source_code,meta_data["startLine"],meta_data["endLine"]))
 
                 if len(self.pos_methods)>len_pos_methods:
-                    print((len(self.pos_methods)>len_pos_methods)/len(mod_file.methods_before))
+                    print((len(self.pos_methods)-len_pos_methods)/len(mod_file.methods_before))
                     
 
         return self.pos_methods, self.neg_methods
