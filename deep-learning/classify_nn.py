@@ -46,9 +46,9 @@ def load_autoencoder_model(model_path, n_inputs, encoding_dim, device):
     autoencoder.eval()
     return autoencoder
 
-def get_bottleneck_representation(em, input_dim, encoding_dim):
+def get_bottleneck_representation(em, input_dim, encoding_dim, model_path):
 
-    model_path = "./trained_models/autoencoder_gc_pn_128_150.pth"  # Path to the saved model
+    # model_path = "./trained_models/autoencoder_gc_pn_128_150.pth"  # Path to the saved model
     n_inputs = input_dim  # Input dimension
     encoding_dim = encoding_dim  # Latent space dimension
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -74,10 +74,9 @@ def get_input_embeddings(bert, train_data):
         with torch.cuda.amp.autocast():
             batch_embeddings = bert.generate_embeddings(input_ids)
 
-        # bottleneck_rep = get_bottleneck_representation(batch_embeddings,768,128)
+        bottleneck_rep = get_bottleneck_representation(batch_embeddings,768,128)
 
-        # bottleneck_rep_list.append(bottleneck_rep.cpu())
-        bottleneck_rep_list.append(batch_embeddings.cpu())
+        bottleneck_rep_list.append(bottleneck_rep.cpu())        
         # print(torch.cuda.memory_allocated()/1024**2)
 
     bottleneck_rep_arr = np.concatenate(bottleneck_rep_list, axis=0)
@@ -171,6 +170,6 @@ if __name__=="__main__":
     with open("../data/np_arrays/test_label_file_0001.npy","+rb") as f:
         test_label_arr = np.load(f)
 
-    model_train(128,50,16,1000,train_data_arr,train_label_arr,test_data_arr,test_label_arr)
+    model_train(128,50,16,200,train_data_arr,train_label_arr,test_data_arr,test_label_arr)
 
     

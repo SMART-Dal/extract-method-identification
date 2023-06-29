@@ -104,6 +104,6 @@ if __name__=="__main__":
 
     print("Start...")
     # save_nps("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/output/file_0001.jsonl","file_0001")
-    save_nps("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/output/file_0001.jsonl","file_0001",
+    save_nps("/home/ip1102/projects/def-tusharma/ip1102/Research/data/output/file_0001.jsonl","file_0001",
              halfsize=False,
              split_by_size=True)
