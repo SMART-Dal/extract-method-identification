@@ -1,8 +1,8 @@
-joblib==1.2.0
-PyDriller==2.4.1
-pymongo==4.3.3
-python-dotenv==1.0.0
-transformers==4.27.2
+joblib
+PyDriller
+pymongo
+python-dotenv
+transformers
 tensorflow
 torch
 scikit-learn
