@@ -1,5 +1,5 @@
 from sklearn.model_selection import train_test_split
-import numpy as np, json, random
+import numpy as np, json, random, pickle
 
 
 def __get_data_from_jsonl(data_file):
@@ -41,7 +41,7 @@ def get_train_test_val_split(data, labels):
     print(f"Training label length - {len(train_label)}. Validation label length - {len(test_label)}")
     return train_data, test_data, train_label, test_label
 
-def split_by_ratio(test_data, test_labels, ratio=0.6):
+def split_by_ratio(test_data, test_labels, ratio=0.85):
 
     combined_data = list(zip(test_data, test_labels))
 
@@ -104,6 +104,14 @@ if __name__=="__main__":
 
     print("Start...")
     # save_nps("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/output/file_0001.jsonl","file_0001")
-    save_nps("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/output/file_0001.jsonl","file_0001",
-             halfsize=False,
-             split_by_size=True)
+    # save_nps("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/output/file_0001.jsonl","file_0001_3",
+    #          halfsize=True,
+    #          split_by_size=True)
+
+    with open('/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/x_val.pkl','rb') as f:
+        x_val = pickle.load(f)
+
+    with open('/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/y_val.pkl','rb') as f:
+        y_val = pickle.load(f)    
+    
+    print(type(x_val), type(y_val))

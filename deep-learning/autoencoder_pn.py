@@ -93,7 +93,7 @@ def get_embedded_data(data):
     bert = Bert("microsoft/graphcodebert-base")
     print(len(data))
     tokenized_data = [bert.tokenizer.encode(x, padding='max_length', truncation=True, max_length=512) for x in data]
-    batch_size = 2
+    batch_size = 8
     num_samples = len(tokenized_data)
     embedding_list = []
     print("Generating Batch Embeddings")
@@ -103,7 +103,9 @@ def get_embedded_data(data):
         input_ids = torch.tensor(batch_tokenized_data).to(device)      
         with torch.cuda.amp.autocast():
             batch_embeddings = bert.generate_embeddings(input_ids)
-        embedding_list.append(batch_embeddings.cpu())
+        # embedding_list.append(batch_embeddings.cpu())
+
+        embedding_list.append(batch_embeddings)
 
     batch_embedding_arr = torch.concatenate(embedding_list, axis=0)    
     return batch_embedding_arr
@@ -173,7 +175,7 @@ def train_autoencoder(data, batch_size, num_epochs,n_inputs,encoding_dim, save_i
 
             alpha = len(valid_data_loader) // batch_size
             epoch_val_loss = val_loss_sum / alpha
-            writer.add_scalar("Loss/train", epoch_val_loss, epoch)
+            # writer.add_scalar("Loss/train", epoch_val_loss, epoch)
             val_losses.append(epoch_val_loss)
 
         print(f'Epoch {epoch+1} \t\t Training Loss: {epoch_train_loss} \t\t Validation Loss: {epoch_val_loss}')
@@ -191,7 +193,8 @@ def train_autoencoder(data, batch_size, num_epochs,n_inputs,encoding_dim, save_i
 
     with open(f'./trained_models/AE/losses/val_losses_{encoding_dim}_pn.pkl', 'wb') as f:
         pickle.dump(val_losses, f)
-    # print(f"Training losses saved at losses.pkl")
+
+    print(f"Training losses saved. Train Loss={len(train_losses)}, Validation Loss={len(val_losses)}")
 
     return autoencoder
 
@@ -203,10 +206,12 @@ if __name__=="__main__":
     with open("../data/np_arrays/test_data_file_0000.npy","rb") as f:
         val_data_arr = np.load(f)
 
-    print(train_data_arr.shape)
+    print("Train Data Shape",train_data_arr.shape)
+    print("Validation Data Shape",val_data_arr.shape)
+    
     # train_autoencoder(train_data_arr,8,150,768,128,save_interval=50, valid_data=val_data_arr,
     #                   model_name="microsoft/codebert-base",model_shorthand="cb")
-    train_autoencoder(train_data_arr,8,150,768,128,save_interval=50, valid_data=val_data_arr,
+    train_autoencoder(train_data_arr,8,50,768,128,save_interval=50, valid_data=val_data_arr,
                     model_name="microsoft/graphcodebert-base",model_shorthand="gc")
     # train_autoencoder(train_data_arr,8,150,768,128,save_interval=50, valid_data=val_data_arr,
     #             model_name="Salesforce/codet5-small",model_shorthand="ct")
