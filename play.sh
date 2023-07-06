@@ -2,7 +2,7 @@
 #SBATCH --mem=16G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
-#SBATCH --time=0:15:0   
+#SBATCH --time=0:2:0   
 #SBATCH --mail-user=indranil.palit@dal.ca
 #SBATCH --mail-type=ALL
 
@@ -13,6 +13,7 @@
 # python play.py
 # python db_test.py
 
-for file in data/*.csv; do
-    echo $refresearch/$file
-done
+# for file in data/*.csv; do
+#     echo $refresearch/$file
+# done
+

@@ -1,0 +1,23 @@
+Total samples -  27634
+Maximum methods per case in a repo -  2504
+Training sample length - 22107. Validation Sample Length - 5527
+Epoch 1 		 Training Loss: 0.10304031167691506 		 Validation Loss: 0.0002799894427880645
+Time for epoch 1 -  346.17344522476196
+Epoch 2 		 Training Loss: 0.0985962864383516 		 Validation Loss: 0.0002854709455277771
+Time for epoch 2 -  344.68850207328796
+Model checkpoint saved at epoch 2
+Epoch 3 		 Training Loss: 0.09778463012402723 		 Validation Loss: 0.0002764302771538496
+Time for epoch 3 -  345.80612564086914
+Epoch 4 		 Training Loss: 0.09734542536591051 		 Validation Loss: 0.0002750885905697942
+Time for epoch 4 -  345.5875573158264
+Model checkpoint saved at epoch 4
+Epoch 5 		 Training Loss: 0.09699366936883343 		 Validation Loss: 0.00029933886253274977
+Time for epoch 5 -  345.90563917160034
+Epoch 6 		 Training Loss: 0.09678206557755704 		 Validation Loss: 0.00026157201500609517
+Time for epoch 6 -  343.19423818588257
+Model checkpoint saved at epoch 6
+Epoch 7 		 Training Loss: 0.09661581367523815 		 Validation Loss: 0.00027809402672573924
+Time for epoch 7 -  343.92780590057373
+Epoch 8 		 Training Loss: 0.09650597859621479 		 Validation Loss: 0.00027756448253057897
+Time for epoch 8 -  343.2171745300293
+Model checkpoint saved at epoch 8

@@ -52,6 +52,18 @@ class Bert:
         embedding = output.last_hidden_state.mean(dim=1).squeeze().tolist()
 
         return embedding
+    
+    @staticmethod
+    def embedding_generator(data_batch):
+        for item in data_batch:
+            positive_case_methods = item['positive_case_methods']
+            negative_case_methods = item['negative_case_methods']
+
+            positive_embeddings = gen_embeddings(positive_case_methods)
+            negative_embeddings = gen_embeddings(negative_case_methods)
+
+            yield positive_embeddings, negative_embeddings
+
 
 
 
