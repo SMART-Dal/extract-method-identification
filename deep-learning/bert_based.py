@@ -1,4 +1,4 @@
-from transformers import  AutoTokenizer, AutoModel, AutoModelForSequenceClassification,AutoModelForSeq2SeqLM
+from transformers import  AutoTokenizer, AutoModel, AutoModelForSequenceClassification
 import torch, numpy as np
 
 class Bert:
@@ -12,19 +12,11 @@ class Bert:
         elif model_name == "microsoft/codebert-base":
             self.tokenizer= AutoTokenizer.from_pretrained(model_name)
             self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
-        elif model_name == "Salesforce/codet5-small":
-            self.tokenizer= AutoTokenizer.from_pretrained(model_name)
-            self.model=AutoModelForSeq2SeqLM.from_pretrained(model_name)            
-
 
     def generate_embeddings(self,code,device="cuda"):
 
         inputs = code.to(device)
         model = self.model.to(device)
-        # print(inputs)
-        # raise Exception
-
-
         outputs = model(inputs)
         # print(type(outputs))
         # print(outputs.__dict__)

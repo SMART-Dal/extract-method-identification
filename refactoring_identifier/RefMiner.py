@@ -1,8 +1,5 @@
 import os, subprocess,sys
 
-
-# print(os.environ['refresearch'])
-
 class RefMiner:
 
     def __init__(self) -> None:

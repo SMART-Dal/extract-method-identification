@@ -6,9 +6,7 @@ from refactoring_identifier.RefMiner import RefMiner
 from utils.file_folder_remover import Remover
 from utils.method_code_extractor import MethodExtractor
 from embeddings.bert_based import Bert
-from utils.Database import Database
 from joblib import Parallel, delayed
-from dotenv import dotenv_values
 
 
 # Define the number of workers to use for parallel processing
@@ -47,10 +45,6 @@ def process_repo(repo_details):
         print(e)
         return
     
-    #Establish DB Connections
-    # gc_db = Database("GraphCodeBert_DB")
-    # gc_db = Database("test_cc")
-    # cb_db = Database("CodeBert_DB")
 
     #Store the methods
     db_dict = {

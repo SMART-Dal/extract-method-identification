@@ -1,6 +1,5 @@
 import pydriller, json
 from utils.file_folder_remover import Remover
-# from file_folder_remover import Remover
 
 class MethodExtractor:
 
