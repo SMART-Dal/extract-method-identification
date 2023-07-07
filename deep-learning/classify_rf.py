@@ -1,5 +1,5 @@
 from sklearn.ensemble import RandomForestClassifier
-import torch, numpy as np, json, pickle, time, os
+import torch, numpy as np, json, pickle, time, os, sys
 from tqdm import tqdm
 from bert_based import Bert
 from autoencoder_pn import Autoencoder
@@ -151,10 +151,17 @@ def test_rf_ae(test_data, test_label, model):
 
 if __name__=="__main__":
 
-    with open("../data/np_arrays/train_data_file_0001.npy","+rb") as f:
+
+    train_data_file_path = sys.argv[1]
+    test_data_file_path = sys.argv[2]
+    train_label_file_path = sys.argv[3]
+    test_label_file_path = sys.argv[4]
+
+
+    with open(train_data_file_path,"+rb") as f:
         train_data_arr = np.load(f)
 
-    with open("../data/np_arrays/train_label_file_0001.npy","+rb") as f:
+    with open(train_label_file_path,"+rb") as f:
         train_label_arr = np.load(f)
 
     print("Training Data Shape - ",train_data_arr.shape)
@@ -167,9 +174,9 @@ if __name__=="__main__":
     with open (os.path.join(rf_model_path,"rf_ae.pkl"),"wb") as f:
         pickle.dump(rf_model,f)
 
-    with open("../data/np_arrays/test_data_file_0001.npy","+rb") as f:
+    with open(test_data_file_path,"+rb") as f:
         test_data_arr = np.load(f)
-    with open("../data/np_arrays/test_label_file_0001.npy","+rb") as f:
+    with open(test_label_file_path,"+rb") as f:
         test_label_arr = np.load(f)
 
     with open(os.path.join(rf_model_path,"rf_ae.pkl"),"rb") as f:

@@ -103,8 +103,8 @@ def save_nps(file_path, file_name, halfsize=True, split_by_size=True):
 if __name__=="__main__":
 
     print("Start...")
-    input_file_name = sys.argv[1]
-    print(input_file_name)
-    # save_nps(f"../data/output/{input_file_name}",input_file_name,
-    #          halfsize=True,
-    #          split_by_size=True)
+    input_file_path = sys.argv[1]
+    output_file_name = sys.argv[2]
+    save_nps(f"../data/output/{input_file_path}",output_file_name,
+             halfsize=True,
+             split_by_size=True)

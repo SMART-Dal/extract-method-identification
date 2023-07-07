@@ -167,10 +167,13 @@ if __name__=="__main__":
 
     print("Start")
 
-    with open("../data/np_arrays/train_data_file_0000.npy","rb") as f:
+    train_file_path = sys.argv[1]
+    test_file_path = sys.argv[2]
+
+    with open(train_file_path,"rb") as f:
         train_data_arr = np.load(f)
 
-    with open("../data/np_arrays/test_data_file_0000.npy","rb") as f:
+    with open(test_file_path,"rb") as f:
         val_data_arr = np.load(f)
 
     print("Train Data Shape",train_data_arr.shape)
