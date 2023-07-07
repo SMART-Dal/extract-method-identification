@@ -32,6 +32,3 @@ class Remover:
         except Exception as e:
             print(e)
             return False
-
-if __name__=="__main__":
-    Remover("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/embeddings/code2vec.py").remove_file()

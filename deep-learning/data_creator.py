@@ -1,5 +1,5 @@
 from sklearn.model_selection import train_test_split
-import numpy as np, json, random, pickle
+import numpy as np, json, random, pickle, sys
 
 
 def __get_data_from_jsonl(data_file):
@@ -103,15 +103,8 @@ def save_nps(file_path, file_name, halfsize=True, split_by_size=True):
 if __name__=="__main__":
 
     print("Start...")
-    # save_nps("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/output/file_0001.jsonl","file_0001")
-    # save_nps("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/output/file_0001.jsonl","file_0001_3",
+    input_file_name = sys.argv[1]
+    print(input_file_name)
+    # save_nps(f"../data/output/{input_file_name}",input_file_name,
     #          halfsize=True,
     #          split_by_size=True)
-
-    with open('/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/x_val.pkl','rb') as f:
-        x_val = pickle.load(f)
-
-    with open('/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/data/y_val.pkl','rb') as f:
-        y_val = pickle.load(f)    
-    
-    print(type(x_val), type(y_val))

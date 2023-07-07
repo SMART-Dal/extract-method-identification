@@ -226,25 +226,20 @@ def model_test(test_data, test_label, nn_model_path, ae_path):
 
 if __name__=="__main__":
 
-    with open("../data/np_arrays/train_data_file_0001_3.npy","+rb") as f:
+    with open("../data/np_arrays/train_data_file_0001.npy","+rb") as f:
         train_data_arr = np.load(f)
 
-    with open("../data/np_arrays/train_label_file_0001_3.npy","+rb") as f:
+    with open("../data/np_arrays/train_label_file_0001.npy","+rb") as f:
         train_label_arr = np.load(f)
 
-    with open("../data/np_arrays/test_data_file_0001_3.npy","+rb") as f:
+    with open("../data/np_arrays/test_data_file_0001.npy","+rb") as f:
         test_data_arr = np.load(f)
 
-    with open("../data/np_arrays/test_label_file_0001_3.npy","+rb") as f:
+    with open("../data/np_arrays/test_label_file_0001.npy","+rb") as f:
         test_label_arr = np.load(f)
     print("Data loading complete")
-    # model_train(128,50,16,200,train_data_arr,train_label_arr,test_data_arr,test_label_arr,
-    #              "/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/deep-learning/trained_models/AE/models/autoencoder_gc_pn_128.pth")
     model_train(768,50,16,200,train_data_arr,train_label_arr,test_data_arr,test_label_arr,
-                 "/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/deep-learning/trained_models/AE/models/autoencoder_gc_pn_128.pth")
-  
-    # model_test(test_data_arr,test_label_arr,
-    #            "/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/deep-learning/trained_models/Classification/models/nn3.pth",
-    #             "/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/deep-learning/trained_models/AE/models/autoencoder_gc_pn_128.pth")    
+                 "./trained_models/AE/models/autoencoder_gc_pn_128.pth")
+
 
     

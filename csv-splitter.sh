@@ -1,8 +1,10 @@
 #!/bin/bash
- 
-cwd_folder=/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research
+
+# Add the project's root folder absoluite path
+cwd_folder=
 cd $cwd_folder
 filename=$cwd_folder/input.csv
 
-# split -d -a 4 --additional-suffix=.csv -l 10000 $filename $cwd_folder/data/file_
-split -d -a 4 --additional-suffix=.csv -l 250 $filename $cwd_folder/data/file_
+# Split the input file into files of 10000 rows
+split -d -a 4 --additional-suffix=.csv -l 10000 $filename $cwd_folder/data/file_
+

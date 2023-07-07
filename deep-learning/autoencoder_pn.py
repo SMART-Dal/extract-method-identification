@@ -1,4 +1,4 @@
-import torch, json, pickle, time, numpy as np, sys
+import torch, json, pickle, time, numpy as np, sys, os
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader,Dataset
@@ -53,42 +53,6 @@ class CustomDataset(Dataset):
         x = self.data[index]
         return x
 
-def __get_data_from_jsonl(data_file):
-
-    data, labels = [], []
-    max_p, max_n = 0, 0
-    with open(data_file, 'r') as file:
-        for line in file:
-            item = json.loads(line)
-            if len(item['positive_case_methods'])==0:
-                continue 
-            if len(item['positive_case_methods'])>max_p:
-                max_p=len(item['positive_case_methods'])
-
-            if len(data)>=10000:
-                break
-
-            data+=item['positive_case_methods']
-            # labels+=[1 for i in range(len(item))]
-            labels.extend([1]*len(item['positive_case_methods']))
-            data+=item['negative_case_methods']
-            # labels+=[1 for i in range(len(item))]
-            labels.extend([0]*len(item['positive_case_methods']))
-        try:
-            assert len(labels)==len(data)
-        except AssertionError as e:
-            print(len(labels))
-            print(len(data))
-    print("Total samples - ", len(data))
-    print("Maximum methods per case in a repo - ", max_p)
-    return data, labels
-
-def get_train_val_split(data, labels):
-    
-    train_data, test_data, _, _ = train_test_split(data,labels, test_size=0.2, stratify=labels)
-    print(f"Training sample length - {len(train_data)}. Validation Sample Length - {len(test_data)}")
-    return train_data, test_data
-
 def get_embedded_data(data):
     bert = Bert("microsoft/graphcodebert-base")
     print(len(data))
@@ -116,8 +80,6 @@ def train_autoencoder(data, batch_size, num_epochs,n_inputs,encoding_dim, save_i
     num_batches = len(data) // batch_size
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    writer = SummaryWriter("./logs/")
 
     print("Get the data embeddings...")
     embedded_data = get_embedded_data(data)
@@ -159,7 +121,6 @@ def train_autoencoder(data, batch_size, num_epochs,n_inputs,encoding_dim, save_i
 
         alpha = len(train_data_loader) // batch_size
         epoch_train_loss = train_loss / alpha
-        writer.add_scalar("Loss/train", epoch_train_loss, epoch)
         train_losses.append(epoch_train_loss)
 
         if valid_data is not None:
@@ -175,7 +136,6 @@ def train_autoencoder(data, batch_size, num_epochs,n_inputs,encoding_dim, save_i
 
             alpha = len(valid_data_loader) // batch_size
             epoch_val_loss = val_loss_sum / alpha
-            # writer.add_scalar("Loss/train", epoch_val_loss, epoch)
             val_losses.append(epoch_val_loss)
 
         print(f'Epoch {epoch+1} \t\t Training Loss: {epoch_train_loss} \t\t Validation Loss: {epoch_val_loss}')
@@ -184,14 +144,18 @@ def train_autoencoder(data, batch_size, num_epochs,n_inputs,encoding_dim, save_i
     
 
     # Save Model
-    checkpoint_path = f"./trained_models/AE/models/autoencoder_{model_shorthand}_pn_{encoding_dim}.pth"
+    checkpoint_folder_path = "./trained_models/AE/models"
+    os.makedirs(checkpoint_folder_path, exist_ok=True)
+    checkpoint_path = os.path.join(checkpoint_folder_path,f"autoencoder_{model_shorthand}_pn_{encoding_dim}.pth")
     torch.save(autoencoder.state_dict(), checkpoint_path)
 
     # Save losses list
-    with open(f'./trained_models/AE/losses/train_losses_{encoding_dim}_pn.pkl', 'wb') as f: # TODO: Name dynamic
+    losses_folder_path = "./trained_models/AE/losses"
+    os.makedirs(losses_folder_path, exist_ok=True)
+    with open(os.path.join(losses_folder_path,f'train_losses_{encoding_dim}_pn.pkl'), 'wb') as f:
         pickle.dump(train_losses, f)
 
-    with open(f'./trained_models/AE/losses/val_losses_{encoding_dim}_pn.pkl', 'wb') as f:
+    with open(os.path.join(losses_folder_path,f'val_losses_{encoding_dim}_pn.pkl'), 'wb') as f:
         pickle.dump(val_losses, f)
 
     print(f"Training losses saved. Train Loss={len(train_losses)}, Validation Loss={len(val_losses)}")
@@ -200,6 +164,9 @@ def train_autoencoder(data, batch_size, num_epochs,n_inputs,encoding_dim, save_i
 
 
 if __name__=="__main__":
+
+    print("Start")
+
     with open("../data/np_arrays/train_data_file_0000.npy","rb") as f:
         train_data_arr = np.load(f)
 
@@ -208,10 +175,5 @@ if __name__=="__main__":
 
     print("Train Data Shape",train_data_arr.shape)
     print("Validation Data Shape",val_data_arr.shape)
-    
-    # train_autoencoder(train_data_arr,8,150,768,128,save_interval=50, valid_data=val_data_arr,
-    #                   model_name="microsoft/codebert-base",model_shorthand="cb")
     train_autoencoder(train_data_arr,8,50,768,128,save_interval=50, valid_data=val_data_arr,
                     model_name="microsoft/graphcodebert-base",model_shorthand="gc")
-    # train_autoencoder(train_data_arr,8,150,768,128,save_interval=50, valid_data=val_data_arr,
-    #             model_name="Salesforce/codet5-small",model_shorthand="ct")

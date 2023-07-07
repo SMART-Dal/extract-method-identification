@@ -23,10 +23,6 @@ class Bert:
         if self.model_name=="microsoft/graphcodebert-base":
             with torch.no_grad():
                 embeddings = outputs.last_hidden_state.mean(dim=1).squeeze()
-        else:
-            hidden_states = outputs.hidden_states
-            last_hidden_state = hidden_states[-1]  # Assuming the last layer's hidden state is required
-            embeddings = last_hidden_state.mean(dim=1).squeeze()
         
         return embeddings
 

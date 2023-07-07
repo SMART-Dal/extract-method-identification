@@ -1,5 +1,4 @@
 import pydriller, json
-from utils.file_folder_remover import Remover
 
 class MethodExtractor:
 
@@ -113,7 +112,7 @@ class MethodExtractor:
 
 
 if __name__=="__main__":
-    json_parser = MethodExtractor(repo_path="/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/refactoring-toy-example",json_path="/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/refactoring_identifier/output/output.json")
+    json_parser = MethodExtractor(repo_path="./refactoring-toy-example",json_path="./refactoring_identifier/output/output.json")
     parsed_json_dict = json_parser.json_parser()
     pos, neg = json_parser.extract_method_body(parsed_json_dict)
     print(len(pos),len(neg))

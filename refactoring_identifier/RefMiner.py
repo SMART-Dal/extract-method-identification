@@ -45,7 +45,3 @@ class RefMiner:
             os.chdir(self.cwd)
             raise Exception("Error running RefactoringMiner in repository - "+repo_path)
 
-
-if __name__=="__main__":
-    
-    RefMiner().exec_refactoring_miner("/home/ip1102/projects/def-tusharma/ip1102/Ref-Res/Research/refactoring-toy-example","ref_toy")

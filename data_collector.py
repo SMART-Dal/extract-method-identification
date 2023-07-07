@@ -5,7 +5,6 @@ from utils.RepoDownload import CloneRepo
 from refactoring_identifier.RefMiner import RefMiner
 from utils.file_folder_remover import Remover
 from utils.method_code_extractor import MethodExtractor
-from embeddings.bert_based import Bert
 from joblib import Parallel, delayed
 
 
@@ -72,27 +71,12 @@ def process_repo(repo_details):
     
     print("End analysis for repo - "+repo_details[0])
 
-
-def run_process(NUM_WORKERS, process_repo):
-    with open("/home/ip1102/Playground/multi_tp/data/input.csv", "r") as f:
-        reader = csv.reader(f)
-        repo_details = [(row[0],row[1]) for row in reader]
-    t = time.time()
-
-    # Use multiprocessing to process the repos in parallel
-    # with Pool(NUM_WORKERS) as p:
-    #     p.map(process_repo, repo_details)
-
-    #Use Joblib
-    Parallel(n_jobs=NUM_WORKERS)(delayed(process_repo)(repo_detail) for repo_detail in repo_details)
-    return t
-
 if __name__=="__main__":
 
-    # print(sys.argv[1])
+    print("Start")
+    print(sys.argv[1])
     input_file = sys.argv[1]
     output_file_name = sys.argv[2]
-    # input_file = "/home/ip1102/Ref-Res/extract-method-identification/data/test.csv"
 
     with open(input_file,"r") as f:
         reader = csv.reader(f)
