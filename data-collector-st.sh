@@ -2,9 +2,7 @@
 #SBATCH --mem=64G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
-#SBATCH --time=3:0:0   
-#SBATCH --mail-user=indranil.palit@dal.ca
-#SBATCH --mail-type=ALL
+#SBATCH --time=3:0:0
 #SBATCH --signal=B:USR1@180
 
 # output_file_name=file_0002.jsonl

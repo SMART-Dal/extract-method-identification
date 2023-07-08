@@ -46,3 +46,6 @@
 
 - It will generate the encoded embeddings on the fly and the final evaluation metrics will be displayed on the terminal. 
 
+- To plot the t-SNE plots, execute the `cd` into `deep-learning/metrics/` and execute the following - `python plot.py tsne <embedded_representation_path> <label_array_path>`
+
+

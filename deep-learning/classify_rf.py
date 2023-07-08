@@ -62,6 +62,10 @@ def train_rf_ae(train_data, train_label, using_AE=True):
     print("Label shape - ", train_label.shape)
     print("Input shape - ", bottleneck_rep_arr.shape)
 
+    # Save the embedding Vector
+    os.makedirs('./logs/vectors/',exist_ok=True)
+    np.save('./logs/vectors/ae_encoded_vector.npy',bottleneck_rep_arr)
+
     rf = RandomForestClassifier(100,n_jobs=-1, random_state=42)
     lr = LogisticRegression(max_iter=1000,random_state=42)
     dt = DecisionTreeClassifier(random_state=42)
@@ -126,10 +130,10 @@ def test_rf_ae(test_data, test_label, model):
         with torch.cuda.amp.autocast():
             batch_embeddings = bert.generate_embeddings(input_ids)
 
-        # bottleneck_rep = get_bottleneck_representation(batch_embeddings,768,128)
+        bottleneck_rep = get_bottleneck_representation(batch_embeddings,768,128)
 
-        bottleneck_rep_list.append(batch_embeddings.cpu())
-        # bottleneck_rep_list.append(bottleneck_rep.cpu())
+        # bottleneck_rep_list.append(batch_embeddings.cpu())
+        bottleneck_rep_list.append(bottleneck_rep.cpu())
 
     bottleneck_rep_arr = np.concatenate(bottleneck_rep_list, axis=0)
 

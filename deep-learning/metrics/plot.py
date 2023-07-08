@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
-import pickle
+import pickle, sys, os
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.cm as cm
+from sklearn import manifold
 
 def loss_plot(train_loss_path, val_loss_path, epochs):
 
@@ -104,7 +105,83 @@ def bar_plot_mod():
     plt.savefig('plot_metric_compare.png', transparent=True)
 
 
+'''
+The following 3 methods have been borrowed from this repository - https://github.com/VulDetProject/ReVeal/tree/ca31b783384b4cdb09b69950e48f79fa0748ef1d
+'''
+def plot_embedding_tsne(X_org, y, title=None):
+    X, Y = X_org, y
+    tsne = manifold.TSNE(n_components=2, init='pca', random_state=0)
+    print('Fitting TSNE!')
+    X = tsne.fit_transform(X)
+    x_min, x_max = np.min(X, 0), np.max(X, 0)
+    X = (X - x_min) / (x_max - x_min)
+    file_ = open(str(title) + '-tsne-features.json', 'w')
+    if isinstance(X, np.ndarray):
+        _x = X.tolist()
+        _y = Y.tolist()
+    else:
+        _x = X
+        _y = Y
+    file_.close()
+    plt.figure(title)
+    c0, c1 = 0,0
+    tsne_feat = np.zeros(X.shape)
+
+    for i in range(X.shape[0]):
+        if Y[i] == 0:
+          plt.text(X[i, 0], X[i, 1], 'o',
+                     fontdict={'weight': 'bold', 'size': 9})
+        else:
+          plt.text(X[i, 0], X[i, 1], '+',
+                     color=plt.cm.Set1(0),
+                     fontdict={'weight': 'bold', 'size': 9})
+          
+    os.makedirs('./logs/tsne/', exist_ok=True)
+    np.save('tsne_feat.npy',tsne_feat)
+    print(c0,c1)
+    if title is not None:
+        plt.title("")
+    plt.show()
+
+def calculate_centroids(_features, _labels):
+    pos = []
+    neg = []
+    for f, l  in zip(_features, _labels):
+        if l == 1:
+            pos.append(f)
+        else:
+            neg.append(f)
+    posx = [x[0] for x in pos]
+    posy = [x[1] for x in pos]
+    negx = [x[0] for x in neg]
+    negy = [x[1] for x in neg]
+    _px = np.median(posx)
+    _py = np.median(posy)
+    _nx = np.median(negx)
+    _ny = np.median(negy)
+    return (_px, _py), (_nx, _ny)
+
+def calculate_distance(p1, p2):
+    return np.abs(np.sqrt(((p1[0] - p2[0])*(p1[0] - p2[0])) + ((p1[1] - p2[1])*(p1[1] - p2[1]))))
+
 
 if __name__=="__main__":
     # bar_plot_mod()
-    loss_plot()
+    # loss_plot()
+    if sys.argv[1] == "tsne":
+        vector_path = sys.argv[2]
+        label_path = sys.argv[3]
+
+        vector = np.load(open(vector_path,"rb"))
+        label = np.load(open(label_path,"rb"))
+
+        plot_embedding_tsne(vector, label)
+
+        # Calculate centroids
+        tsne_feature_array = np.load(open('./logs/tsne/tsne_feat.npy',"rb"))
+
+        pmed, nmed = calculate_centroids(tsne_feature_array, label)
+        dist = calculate_distance(pmed, nmed)
+
+        print(dist)
+
