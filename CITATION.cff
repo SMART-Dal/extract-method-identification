@@ -22,4 +22,4 @@ authors:
     email: tushar@dal.ca
     affiliation: Dalhousie University
 repository-code: 'https://github.com/SMART-Dal/extract-method-identification'
-license: MIT
+license: Apache-2.0
