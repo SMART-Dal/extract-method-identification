@@ -104,3 +104,12 @@ Any CUDA based GPU with a **minimum memory of 4GB**.
     cd deep-learning/metrics/
     python plot.py tsne <embedded_representation_path> <label_array_path>
     ```
+### Citation
+```
+@software{Palit_Extract_method_identification,
+author = {Palit, Indranil and Shetty, Gautam and Arif, Hera and Sharma, Tushar},
+license = {MIT},
+title = {{Extract method identification}},
+url = {https://github.com/SMART-Dal/extract-method-identification}
+}
+```
