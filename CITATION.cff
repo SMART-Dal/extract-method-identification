@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+title: Extract method identification
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Indranil
+    family-names: Palit
+    email: indranil.palit@dal.ca
+    affiliation: Dalhousie University
+  - given-names: Gautam
+    family-names: Shetty
+    email: gautam.shetty@dal.ca
+    affiliation: Dalhousie University
+  - given-names: Hera
+    family-names: Arif
+    email: hr833194@dal.ca
+    affiliation: Dalhousie University
+  - given-names: Tushar
+    family-names: Sharma
+    email: tushar@dal.ca
+    affiliation: Dalhousie University
+repository-code: 'https://github.com/SMART-Dal/extract-method-identification'
+license: MIT
