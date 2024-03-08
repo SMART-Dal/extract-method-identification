@@ -13,7 +13,7 @@ class Bert:
             self.tokenizer= AutoTokenizer.from_pretrained(model_name)
             self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
-    def generate_embeddings(self,code,device="cuda"):
+    def generate_embeddings(self,code,device="cpu"):
 
         inputs = code.to(device)
         model = self.model.to(device)

@@ -18,9 +18,9 @@ def load_autoencoder_model(model_path, n_inputs, encoding_dim, device):
     autoencoder.eval()
     return autoencoder
 
-def get_bottleneck_representation(em, input_dim, encoding_dim):
+def get_bottleneck_representation(base_folder_path, em, input_dim, encoding_dim):
 
-    model_path = "./trained_models/autoencoder_gc_pn_128_150.pth"  # Path to the saved model
+    model_path = os.path.join(base_folder_path, "trained_models/AE/models/autoencoder_gc_pn_128.pth")  # Path to the saved model
     n_inputs = input_dim  # Input dimension
     encoding_dim = encoding_dim  # Latent space dimension
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -29,12 +29,9 @@ def get_bottleneck_representation(em, input_dim, encoding_dim):
         bottleneck_representation = autoencoder.encoder(em)
     return bottleneck_representation
 
-def train_rf_ae(train_data, train_label, using_AE=True):
-
+def train_rf_ae(base_folder_path, train_data, train_label, using_AE=True):
     bert = Bert("microsoft/graphcodebert-base")
-
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
     tokenized_data = [bert.tokenizer.encode(text, padding='max_length', truncation=True, max_length=512) for text in train_data]
 
     batch_size = 8
@@ -42,20 +39,18 @@ def train_rf_ae(train_data, train_label, using_AE=True):
     bottleneck_rep_list = []
 
     print("Tokenization Done. Num of Samples - ", num_samples)
-
+    expected_shape = (batch_size, 768)
     for i in tqdm(range(0, num_samples, batch_size)):
-
         batch_tokenized_data = tokenized_data[i:i+batch_size]
-
         input_ids = torch.tensor(batch_tokenized_data).to(device)
-
         with torch.cuda.amp.autocast():
             batch_embeddings = bert.generate_embeddings(input_ids)
-
-        bottleneck_rep = get_bottleneck_representation(batch_embeddings,768,128)
-
-        # bottleneck_rep_list.append(batch_embeddings.cpu())
-        bottleneck_rep_list.append(bottleneck_rep.cpu())
+        bottleneck_rep = get_bottleneck_representation(base_folder_path, batch_embeddings,768,128)
+        print("Embedding list shape", bottleneck_rep.cpu().shape)
+        if expected_shape == bottleneck_rep.cpu().shape:
+            bottleneck_rep_list.append(bottleneck_rep.cpu())
+        else:
+            bottleneck_rep_list.append(torch.reshape(bottleneck_rep.cpu(), (-1, 128)))
 
     bottleneck_rep_arr = np.concatenate(bottleneck_rep_list, axis=0)
 
@@ -63,8 +58,8 @@ def train_rf_ae(train_data, train_label, using_AE=True):
     print("Input shape - ", bottleneck_rep_arr.shape)
 
     # Save the embedding Vector
-    os.makedirs('./logs/vectors/',exist_ok=True)
-    np.save('./logs/vectors/ae_encoded_vector.npy',bottleneck_rep_arr)
+    os.makedirs(os.path.join(base_folder_path, 'logs/vectors/'),exist_ok=True)
+    np.save(os.path.join(base_folder_path, 'logs/vectors/ae_encoded_vector.npy'),bottleneck_rep_arr)
 
     rf = RandomForestClassifier(100,n_jobs=-1, random_state=42)
     lr = LogisticRegression(max_iter=1000,random_state=42)
@@ -107,12 +102,9 @@ def train_rf_ae(train_data, train_label, using_AE=True):
 
     return random_forest
 
-def test_rf_ae(test_data, test_label, model):
-
+def test_rf_ae(base_folder_path, test_data, test_label, model):
     bert = Bert("microsoft/graphcodebert-base")
-
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
     tokenized_data = [bert.tokenizer.encode(text, padding='max_length', truncation=True, max_length=512) for text in test_data]
 
     batch_size = 8
@@ -122,15 +114,11 @@ def test_rf_ae(test_data, test_label, model):
     print("Tokenization Done. Num of Samples - ", num_samples)
 
     for i in tqdm(range(0, num_samples, batch_size)):
-
         batch_tokenized_data = tokenized_data[i:i+batch_size]
-
         input_ids = torch.tensor(batch_tokenized_data).to(device)
-
         with torch.cuda.amp.autocast():
             batch_embeddings = bert.generate_embeddings(input_ids)
-
-        bottleneck_rep = get_bottleneck_representation(batch_embeddings,768,128)
+        bottleneck_rep = get_bottleneck_representation(base_folder_path, batch_embeddings,768,128)
 
         # bottleneck_rep_list.append(batch_embeddings.cpu())
         bottleneck_rep_list.append(bottleneck_rep.cpu())
@@ -141,26 +129,20 @@ def test_rf_ae(test_data, test_label, model):
     print("Input shape - ", bottleneck_rep_arr.shape)
 
     pred_label = model.predict(bottleneck_rep_arr)
-
     ac,pr,re,f1 = get_metrics_classicalml(test_label, pred_label)
 
     print("Accuracy - ",round(ac,3))
     print("Precision - ",round(pr,3))
     print("Recall - ",round(re,3))
     print("F-1 - ",round(f1,3))
-
     print(classification_report(test_label,pred_label))
 
 
-
 if __name__=="__main__":
-
-
     train_data_file_path = sys.argv[1]
-    test_data_file_path = sys.argv[2]
-    train_label_file_path = sys.argv[3]
+    test_data_file_path = sys.argv[3]
+    train_label_file_path = sys.argv[2]
     test_label_file_path = sys.argv[4]
-
 
     with open(train_data_file_path,"+rb") as f:
         train_data_arr = np.load(f)
@@ -170,9 +152,9 @@ if __name__=="__main__":
 
     print("Training Data Shape - ",train_data_arr.shape)
     print("Training Label Shape - ",train_label_arr.shape)
-    rf_model = train_rf_ae(train_data_arr, train_label_arr)
+    rf_model = train_rf_ae(os.path.dirname(train_data_file_path), train_data_arr, train_label_arr)
 
-    rf_model_path = "./trained_models/Classification/RandomForest"
+    rf_model_path =os.path.join(os.path.dirname(train_data_file_path), "trained_models/Classification/RandomForest")
     os.makedirs(rf_model_path, exist_ok=True)
     
     with open (os.path.join(rf_model_path,"rf_ae.pkl"),"wb") as f:
@@ -187,7 +169,7 @@ if __name__=="__main__":
         model = pickle.load(f)
 
     print("Testing...")
-    test_rf_ae(test_data_arr,test_label_arr, rf_model)
+    test_rf_ae(os.path.join(os.path.dirname(train_data_file_path)), test_data_arr,test_label_arr, rf_model)
 
 
 
